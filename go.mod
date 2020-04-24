@@ -1,4 +1,4 @@
-module github.com/src-d/go-mysql-server
+module github.com/boris-lenzinger/go-mysql-server
 
 require (
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
@@ -26,3 +26,4 @@ require (
 	gopkg.in/yaml.v2 v2.2.2
 	vitess.io/vitess v3.0.0-rc.3.0.20190602171040-12bfde34629c+incompatible
 )
+
