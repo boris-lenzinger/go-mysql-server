@@ -24,8 +24,10 @@ const (
 	ConvertToNChar = "nchar"
 	// ConvertToDate is a conversion to date.
 	ConvertToDate = "date"
-	// ConvertToDatetime is a conversion to datetune.
+	// ConvertToDatetime is a conversion to datetime.
 	ConvertToDatetime = "datetime"
+	// ConvertToTimestamp is a conversion to timestamp.
+	ConvertToTimestamp = "timestamp"
 	// ConvertToDecimal is a conversion to decimal.
 	ConvertToDecimal = "decimal"
 	// ConvertToJSON is a conversion to json.
@@ -71,6 +73,8 @@ func (c *Convert) Type() sql.Type {
 	case ConvertToDate:
 		return sql.Date
 	case ConvertToDatetime:
+		return sql.Datetime
+	case ConvertToTimestamp:
 		return sql.Timestamp
 	case ConvertToDecimal:
 		return sql.Float64

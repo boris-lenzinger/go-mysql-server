@@ -700,8 +700,25 @@ func (t datetimeT) Convert(v interface{}) (interface{}, error) {
 }
 
 func (t datetimeT) Compare(a, b interface{}) (int, error) {
-	av := a.(time.Time)
-	bv := b.(time.Time)
+	// First have to ensure that the types are supported. a and/or b might not
+	// be a datetime but can simply be a string.
+	var av, bv time.Time
+	typeOfA := reflect.TypeOf(a)
+	typeOfB := reflect.TypeOf(b)
+	if typeOfA.Name() != "Time" {
+		convertedA, err := Datetime.Convert(a)
+		if err != nil {return 0, err}
+		av = convertedA.(time.Time)
+	} else {
+		av = a.(time.Time)
+	}
+	if typeOfB.Name() != "Time" {
+		convertedB, err := Datetime.Convert(b)
+		if err != nil {return 0, err}
+		bv = convertedB.(time.Time)
+	} else {
+		bv = b.(time.Time)
+	}
 	if av.Before(bv) {
 		return -1, nil
 	} else if av.After(bv) {
@@ -1189,6 +1206,22 @@ func IsInteger(t Type) bool {
 func IsTime(t Type) bool {
 	return t == Timestamp || t == Date || t == Datetime
 }
+
+// IsDate checks if t is a date
+func IsDate(t Type) bool {
+	return t == Date
+}
+
+// IsTimestamp checks if t is a timestamp
+func IsTimestamp(t Type) bool {
+	return t == Timestamp
+}
+
+// IsDatetime checks if t is a datetime
+func IsDatetime(t Type) bool {
+	return t == Datetime
+}
+
 
 // IsDecimal checks if t is decimal type.
 func IsDecimal(t Type) bool {
