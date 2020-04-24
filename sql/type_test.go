@@ -536,6 +536,73 @@ func TestJSONArraySQL(t *testing.T) {
 	require.Equal(expected, string(val.Raw()))
 }
 
+// This test is required to validate the comparison between datetime_field
+// and a well-formatted string '2020-04-24 11:15:38'
+// The test does not handle the equality which is the trickiest for the
+// following reason: when converting a string '2020-04-24 11:15:38', the
+// fraction time (what is after the seconds) is always zero. But the data
+// is stored in the DB with the exact fraction. So unless luck, this test
+// will always fail. Which is normal. So the equality is not tested.
+func TestCompareDatetimeWithStrings(t *testing.T) {
+	now := time.Now().UTC() // datetime should not be "timezoned" to UTC as mentionned in the MySQL documentation
+	layout := "2006-01-02 15:04:05"
+	futureAsString := now.Add(time.Second).Format(layout)
+	pastAsString := now.Add(time.Second*time.Duration(-1)).Format(layout)
+
+	// A bug in the code leads to panic when the compare method is called between a
+	// datetime and a string
+	defer func() {
+		if err := recover(); err !=nil {
+			t.Errorf("Comparing a well formatted time string to a datetime must not panic.")
+		}
+	}()
+
+	testCases := []struct{
+		datetimeAsString string
+		expected         int
+		errorExpected    bool
+	}{
+		{
+			datetimeAsString: pastAsString,
+			expected: 1,
+			errorExpected: false,
+		},
+		{
+			datetimeAsString: futureAsString,
+			expected: -1,
+			errorExpected: false,
+		},
+		{
+			datetimeAsString: "",
+			errorExpected: true,
+		},
+		{
+			datetimeAsString: "2014",
+			errorExpected: true,
+		},
+		{
+			datetimeAsString: "This is a string",
+			errorExpected: true,
+		},
+	}
+	datetimeNow, err := Datetime.Convert(now)
+	if err != nil {
+		t.Errorf("Conversion of time.Time to Datetime must not trigger an error. Instead, received %+v", err)
+	}
+	for _, tc := range testCases {
+		computed, err := Datetime.Compare(datetimeNow, tc.datetimeAsString)
+		if err != nil && !tc.errorExpected {
+			t.Errorf("Comparing string %q to datetime should not raise an error\n", tc.datetimeAsString)
+		}
+		if err == nil && tc.errorExpected {
+			t.Errorf("Compare string %q to datetime should raise an error since the string cannot be interpreted as a datetime but received no error", tc.datetimeAsString)
+		}
+		if computed != tc.expected {
+			t.Errorf("Comparing string %q to datetime %+v was expected to compute %d but received %d", tc.datetimeAsString, datetimeNow, tc.expected, computed)
+		}
+	}
+}
+
 func TestComparesWithNulls(t *testing.T) {
 	timeParse := func(layout string, value string) time.Time {
 		t, err := time.Parse(layout, value)

@@ -700,8 +700,25 @@ func (t datetimeT) Convert(v interface{}) (interface{}, error) {
 }
 
 func (t datetimeT) Compare(a, b interface{}) (int, error) {
-	av := a.(time.Time)
-	bv := b.(time.Time)
+	// First have to ensure that the types are supported. a and/or b might not
+	// be a datetime but can simply be a string.
+	var av, bv time.Time
+	typeOfA := reflect.TypeOf(a)
+	typeOfB := reflect.TypeOf(b)
+	if typeOfA.Name() != "Time" {
+		convertedA, err := Datetime.Convert(a)
+		if err != nil {return 0, err}
+		av = convertedA.(time.Time)
+	} else {
+		av = a.(time.Time)
+	}
+	if typeOfB.Name() != "Time" {
+		convertedB, err := Datetime.Convert(b)
+		if err != nil {return 0, err}
+		bv = convertedB.(time.Time)
+	} else {
+		bv = b.(time.Time)
+	}
 	if av.Before(bv) {
 		return -1, nil
 	} else if av.After(bv) {

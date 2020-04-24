@@ -74,7 +74,15 @@ func TestConvert(t *testing.T) {
 			expectedErr: false,
 		},
 		{
-			name:        "string to datetime",
+			name:        "string to datetime with both date and time parts",
+			row:         nil,
+			castTo:      ConvertToDatetime,
+			expression:  NewLiteral("2017-12-12 11:12:13", sql.Int32),
+			expected:    time.Date(2017, time.December, 12, 11, 12, 13, 0, time.UTC),
+			expectedErr: false,
+		},
+		{
+			name:        "string to datetime with only date part",
 			row:         nil,
 			expression:  NewLiteral("2017-12-12", sql.Text),
 			castTo:      ConvertToDatetime,
@@ -90,6 +98,9 @@ func TestConvert(t *testing.T) {
 			expectedErr: false,
 		},
 		{
+			// BOR: not  sure that is what it is expected in the documentation...
+			// https://dev.mysql.com/doc/refman/8.0/en/datetime.html . Date is clearly
+			// specified as only YYYY-MM-DD and no time part.
 			name:        "string to date",
 			row:         nil,
 			castTo:      ConvertToDate,
