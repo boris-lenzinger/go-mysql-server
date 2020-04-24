@@ -1207,6 +1207,22 @@ func IsTime(t Type) bool {
 	return t == Timestamp || t == Date || t == Datetime
 }
 
+// IsDate checks if t is a date
+func IsDate(t Type) bool {
+	return t == Date
+}
+
+// IsTimestamp checks if t is a timestamp
+func IsTimestamp(t Type) bool {
+	return t == Timestamp
+}
+
+// IsDatetime checks if t is a datetime
+func IsDatetime(t Type) bool {
+	return t == Datetime
+}
+
+
 // IsDecimal checks if t is decimal type.
 func IsDecimal(t Type) bool {
 	return t == Float32 || t == Float64

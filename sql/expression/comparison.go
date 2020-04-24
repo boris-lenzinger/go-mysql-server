@@ -69,7 +69,28 @@ func (c *comparison) evalLeftAndRight(ctx *sql.Context, row sql.Row) (interface{
 }
 
 func (c *comparison) castLeftAndRight(left, right interface{}) (interface{}, interface{}, error) {
-	if sql.IsNumber(c.Left().Type()) || sql.IsNumber(c.Right().Type()) {
+	if (sql.IsDatetime(c.Left().Type()) && sql.IsText(c.Right().Type())) || (sql.IsDatetime(c.Right().Type()) && sql.IsText(c.Left().Type())) {
+	   l, r, err := convertLeftAndRight(left, right, ConvertToDatetime)
+	   if err != nil {return nil, nil, err}
+	   c.compareType = sql.Datetime
+	   return l, r, nil
+	}
+
+    if (sql.IsDate(c.Left().Type()) && sql.IsText(c.Right().Type())) || (sql.IsDate(c.Right().Type()) && sql.IsText(c.Left().Type())) {
+		l, r, err := convertLeftAndRight(left, right, ConvertToDate)
+		if err != nil {return nil, nil, err}
+		c.compareType = sql.Date
+		return l, r, nil
+    }
+
+    if (sql.IsTimestamp(c.Left().Type()) && sql.IsText(c.Right().Type())) || (sql.IsTimestamp(c.Right().Type()) && sql.IsText(c.Left().Type())) {
+	    l, r, err := convertLeftAndRight(left, right, ConvertToTimestamp)
+	    if err != nil {return nil, nil, err}
+	    c.compareType = sql.Timestamp
+	    return l, r, nil
+    }
+
+    if sql.IsNumber(c.Left().Type()) || sql.IsNumber(c.Right().Type()) {
 		if sql.IsDecimal(c.Left().Type()) || sql.IsDecimal(c.Right().Type()) {
 			l, r, err := convertLeftAndRight(left, right, ConvertToDecimal)
 			if err != nil {
